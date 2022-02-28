@@ -1,19 +1,19 @@
-from typing import TypedDict, List
+from typing import NamedTuple, List
 from pathlib import Path
 
 
-class TexTask(TypedDict):
+class TexTask(NamedTuple):
     index: int
     assigment: Path
     solution: Path
 
 
-class TexWave(TypedDict):
+class TexWave(NamedTuple):
     index: int
     tasks: List[TexTask]
 
 
-class TexYear(TypedDict):
+class TexYear(NamedTuple):
     index: int
     name: str
     waves: List[TexWave]

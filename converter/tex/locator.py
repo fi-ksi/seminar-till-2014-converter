@@ -32,7 +32,7 @@ def get_tex_waves(dir_year: Path) -> Iterator[TexWave]:
         yield TexWave(index=index, tasks=tasks)
 
 
-def get_tex_years(dir_root: Path, beginning_year: int) -> Iterator[TexYear]:
+def get_tex_years(dir_root: Path, beginning_year: int = 2008) -> Iterator[TexYear]:
     for dir_year in filter(lambda x: x.is_dir(), dir_root.iterdir()):
         first_year = int(dir_year.name)
         second_year = first_year + 1
