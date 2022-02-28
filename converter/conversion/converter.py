@@ -7,8 +7,8 @@ from pathlib import Path
 
 from .types import Asset, MarkdownText, MarkdownTask
 
-RE_TASK_HEAD = re.compile(r'\s*\\hlavicka{\d+}{\\zadani{\d+}{(.*?)}{([.\d]*?)}}\s*')
-RE_ASSET = re.compile(r'\[.*?](\(.*?\))')
+RE_TASK_HEAD = re.compile(r'\s*\\hlavicka{.*?}{\\zadani{.*?}{(.*?)}{([.\d]*?)}}\s*')
+RE_ASSET = re.compile(r'\[.*?]\(([^#].*?)\)')
 
 
 def convert_tex_file_to_md(source: Path) -> str:
@@ -19,7 +19,7 @@ def get_tex_assets(source: Path) -> Iterator[Asset]:
     return map(
         lambda match: Asset(
             link_name=match.group(1),
-            file=source.parent.joinpath(match.group(1)).resolve()
+            file=source.parent.joinpath(match.group(1).split(' ', 1)[0]).resolve()
         ),
         RE_ASSET.finditer(convert_tex_file_to_md(source))
     )
@@ -28,7 +28,10 @@ def get_tex_assets(source: Path) -> Iterator[Asset]:
 def parse_task_head(tex_source: Path) -> Match:
     with tex_source.open('r') as f:
         c = f.read()
-    return next(RE_TASK_HEAD.finditer(c))
+    try:
+        return next(RE_TASK_HEAD.finditer(c))
+    except StopIteration:
+        raise ValueError(f"No head inside {tex_source}")
 
 
 def parse_task_name(tex_source: Path) -> str:

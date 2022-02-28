@@ -47,5 +47,7 @@ def get_tex_years(dir_root: Path, beginning_year: int = 2008) -> Iterator[TexYea
         yield TexYear(
             index=year_index,
             name=year_name,
-            waves=waves
+            waves=waves,
+            first_year=first_year,
+            second_year=second_year
         )

@@ -16,4 +16,6 @@ class TexWave(NamedTuple):
 class TexYear(NamedTuple):
     index: int
     name: str
+    first_year: int
+    second_year: int
     waves: List[TexWave]
