@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from shutil import copy
 from typing import Union, Optional
+from subprocess import check_call, PIPE
 
 from ..conversion import MarkdownText, MarkdownTask, get_markdown_text, get_markdown_task
 from ..tex import TexTask, TexWave, TexYear
@@ -50,6 +51,10 @@ def write_tex_task(task: TexTask, dir_wave: Path) -> None:
     task_lowercase_name = re.sub(r'\s+', '_', task_lowercase_name)
 
     dir_task = dir_wave.joinpath(f"uloha_{task.index:02d}_{task_lowercase_name}")
+    if dir_task.exists():
+        print(f'INFO: {dir_task.name} already exists')
+        return
+    dir_task.mkdir(parents=True, exist_ok=False)
 
     file_assigment = dir_task.joinpath('assigment.md')
     dir_data = dir_task.joinpath('data')
@@ -58,6 +63,8 @@ def write_tex_task(task: TexTask, dir_wave: Path) -> None:
 
     write_markdown_text(assigment, file_assigment, dir_data)
     write_markdown_text(solution, file_solution, dir_solution_data)
+    check_call(['git', 'add', "."], stdin=PIPE, cwd=dir_task, stdout=PIPE)
+    check_call(['git', 'commit', '-m', f'chore: init {task_lowercase_name}'], stdin=PIPE, cwd=dir_task, stdout=PIPE)
 
 
 def write_tex_wave(wave: TexWave, dir_year: Path, year: Optional[TexYear] = None) -> None:
