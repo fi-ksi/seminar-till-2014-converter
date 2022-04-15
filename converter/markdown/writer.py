@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from shutil import copy
+from shutil import copy, rmtree
 from typing import Union, Optional
 from subprocess import check_call, PIPE
 
@@ -10,7 +10,7 @@ from ..tex import TexTask, TexWave, TexYear
 from unidecode import unidecode
 
 
-def write_markdown_text(source: Union[MarkdownText, MarkdownTask], target: Path, dir_assets: Path) -> None:
+def write_markdown_text(source: Union[MarkdownText, MarkdownTask], target: Path, dir_assets: Path, content_prefix: str = '') -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     dir_assets.mkdir(parents=True, exist_ok=True)
 
@@ -37,6 +37,8 @@ def write_markdown_text(source: Union[MarkdownText, MarkdownTask], target: Path,
         )
 
     with target.open('w') as f:
+        if content_prefix:
+            f.write(content_prefix)
         f.write(text_content)
 
 
@@ -61,10 +63,14 @@ def write_tex_task(task: TexTask, dir_wave: Path) -> None:
     file_solution = dir_task.joinpath('solution.md')
     dir_solution_data = dir_task.joinpath('task_solution')
 
-    write_markdown_text(assigment, file_assigment, dir_data)
-    write_markdown_text(solution, file_solution, dir_solution_data)
-    check_call(['git', 'add', "."], stdin=PIPE, cwd=dir_task, stdout=PIPE)
-    check_call(['git', 'commit', '-m', f'chore: init {task_lowercase_name}'], stdin=PIPE, cwd=dir_task, stdout=PIPE)
+    try:
+        write_markdown_text(assigment, file_assigment, dir_data, content_prefix=f'# {assigment.name}\n\n')
+        write_markdown_text(solution, file_solution, dir_solution_data)
+        check_call(['git', 'add', "."], stdin=PIPE, cwd=dir_task, stdout=PIPE)
+        check_call(['git', 'commit', '-m', f'chore: init {task_lowercase_name}'], stdin=PIPE, cwd=dir_task, stdout=PIPE)
+    except:
+        rmtree(dir_task)
+        raise
 
 
 def write_tex_wave(wave: TexWave, dir_year: Path, year: Optional[TexYear] = None) -> None:
@@ -73,11 +79,11 @@ def write_tex_wave(wave: TexWave, dir_year: Path, year: Optional[TexYear] = None
         try:
             write_tex_task(task, dir_wave)
         except RuntimeError:
-            print(f'ERR: cannot convert {task.index} in wave {wave.index} in year {year.first_year if year is not None else None}')
+            print(f'ERR: cannot convert {task.index} in wave {wave.index} in year '
+                  f'{year.first_year if year is not None else None}')
 
 
 def write_tex_year(year: TexYear, dir_root: Path) -> None:
     dir_year = dir_root.joinpath(f"{year.first_year}")
     for wave in year.waves:
         write_tex_wave(wave, dir_year, year)
-
