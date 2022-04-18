@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 from typing import List, Set
 from base64 import b64encode
 from mimetypes import guess_type
@@ -58,8 +59,10 @@ def tex_to_html(file_tex: Path) -> str:
         tex_content = f.read()
     tex_content = tex_content\
         .replace(r'\hlavicka', r'%\hlavicka')\
-        .replace(r'\mensinadpis', r'\\ -')\
-        .replace(r'\bullet ', '')
+        .replace(r'\mensinadpis', r'\textbf')\
+        .replace(r'\bullet ', r'\\ -')\
+        .replace(r'\begin{code}', r'___begin__code') \
+        .replace(r'\end{code}', r'___end__code')
     with file_tex_tmp.open('w') as f:
         f.write(r'\usepackage{graphicx}')
         f.write('\n')
@@ -77,7 +80,7 @@ def tex_to_html(file_tex: Path) -> str:
         '-use_dvipng',
         '-discard',
         f"{file_tex_tmp.absolute()}"
-    ], text=True, stderr=PIPE, timeout=60)
+    ], text=True, stderr=PIPE, timeout=15)
     LOG.add_run(stdout)
 
     display = Display()
@@ -85,23 +88,31 @@ def tex_to_html(file_tex: Path) -> str:
     for child in dir_convert.iterdir():
         if not child.name.lower().endswith('.svg'):
             continue
-        call([
-            'inkscape',
-            '--verb=FitCanvasToDrawing',
-            '--verb=FileSave',
-            '--verb=FileQuit',
-            f"{child.absolute()}"
-        ], timeout=60)
+        try:
+            call([
+                'inkscape',
+                '--verb=FitCanvasToDrawing',
+                '--verb=FileSave',
+                '--verb=FileQuit',
+                f"{child.absolute()}"
+            ], timeout=15)
+        except subprocess.TimeoutExpired:
+            child.unlink()
     display.stop()
 
     file_index = dir_convert.joinpath('index.html')
     with file_index.open('r') as f:
         index_html = f.read()
-    index_html = index_html.replace('height: 195.54ex', 'height: 1em')
+    index_html = index_html\
+        .replace('height: 195.54ex', 'height: 1em') \
+        .replace(r'___begin__code', r'<pre><code>') \
+        .replace(r'___emd__code', r'</code></pre>')
 
     soup = BeautifulSoup(index_html, 'html.parser')
     for img in soup.find_all('img'):
         file_img = dir_convert.joinpath(img['src'])
+        if not file_img.exists():
+            continue
         with file_img.open('rb') as f:
             img_b64 = b64encode(f.read()).decode('ascii')
         img['src'] = f"data:{guess_type(file_img)[0]};base64,{img_b64}"
