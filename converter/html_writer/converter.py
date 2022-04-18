@@ -1,12 +1,15 @@
 import shutil
 import re
 from typing import List, Set, Iterable
+from base64 import b64encode
+from mimetypes import guess_type
 
 from converter.tex import TexTask
 from tempfile import mkdtemp
 from pathlib import Path
 from subprocess import check_output, PIPE, call
 from pyvirtualdisplay import Display
+from bs4 import BeautifulSoup
 
 RE_TEX_ASSET = re.compile(r'\\includegraphics.*?{(.*?)}')
 
@@ -64,7 +67,8 @@ def tex_to_html(file_tex: Path) -> str:
     with file_tex.open('r') as f:
         tex_content = f.read()
     tex_content = tex_content\
-        .replace(r'\hlavicka', r'%\hlavicka')
+        .replace(r'\hlavicka', r'%\hlavicka')\
+        .replace(r'\mensinadpis', r'\textbf')
     with file_tex_tmp.open('w') as f:
         f.write(r'\usepackage{graphicx}')
         f.write('\n')
@@ -103,6 +107,15 @@ def tex_to_html(file_tex: Path) -> str:
     with file_index.open('r') as f:
         index_html = f.read()
     index_html = index_html.replace('height: 195.54ex', 'height: 1em')
+
+    soup = BeautifulSoup(index_html, 'html.parser')
+    for img in soup.find_all('img'):
+        file_img = dir_convert.joinpath(img['src'])
+        with file_img.open('rb') as f:
+            img_b64 = b64encode(f.read()).decode('ascii')
+        img['src'] = f"data:{guess_type(file_img)[0]};base64,{img_b64}"
+
+    index_html = soup.prettify()
     with file_index.open('w') as f:
         f.write(index_html)
 
