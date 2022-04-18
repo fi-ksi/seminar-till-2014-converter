@@ -1,9 +1,9 @@
 import shutil
-import re
-from typing import List, Set, Iterable
+from typing import List, Set
 from base64 import b64encode
 from mimetypes import guess_type
 
+from converter.html_writer.types import KSITask
 from converter.tex import TexTask
 from tempfile import mkdtemp
 from pathlib import Path
@@ -11,7 +11,7 @@ from subprocess import check_output, PIPE, call
 from pyvirtualdisplay import Display
 from bs4 import BeautifulSoup
 
-RE_TEX_ASSET = re.compile(r'\\includegraphics.*?{(.*?)}')
+from converter.tex_parser.parser import get_tex_assets, parse_task_name, parse_task_points
 
 
 class HtmlConversionLog:
@@ -50,16 +50,6 @@ class HtmlConversionLog:
 LOG = HtmlConversionLog()
 
 
-def get_tex_assets(file_tex: Path) -> Iterable[Path]:
-    with file_tex.open('r') as f:
-        content = f.read()
-
-    return map(
-        lambda x: file_tex.parent.joinpath(x.group(1)).resolve(),
-        RE_TEX_ASSET.finditer(content)
-    )
-
-
 def tex_to_html(file_tex: Path) -> str:
     dir_convert = Path(mkdtemp(prefix='ksi_task_', dir='/media/ramdisk'))
     file_tex_tmp = dir_convert.joinpath('input.tex')
@@ -68,7 +58,8 @@ def tex_to_html(file_tex: Path) -> str:
         tex_content = f.read()
     tex_content = tex_content\
         .replace(r'\hlavicka', r'%\hlavicka')\
-        .replace(r'\mensinadpis', r'\textbf')
+        .replace(r'\mensinadpis', r'\\ -')\
+        .replace(r'\bullet ', '')
     with file_tex_tmp.open('w') as f:
         f.write(r'\usepackage{graphicx}')
         f.write('\n')
@@ -86,7 +77,7 @@ def tex_to_html(file_tex: Path) -> str:
         '-use_dvipng',
         '-discard',
         f"{file_tex_tmp.absolute()}"
-    ], text=True, stderr=PIPE)
+    ], text=True, stderr=PIPE, timeout=60)
     LOG.add_run(stdout)
 
     display = Display()
@@ -100,7 +91,7 @@ def tex_to_html(file_tex: Path) -> str:
             '--verb=FileSave',
             '--verb=FileQuit',
             f"{child.absolute()}"
-        ])
+        ], timeout=60)
     display.stop()
 
     file_index = dir_convert.joinpath('index.html')
@@ -115,12 +106,16 @@ def tex_to_html(file_tex: Path) -> str:
             img_b64 = b64encode(f.read()).decode('ascii')
         img['src'] = f"data:{guess_type(file_img)[0]};base64,{img_b64}"
 
-    index_html = soup.prettify()
-    with file_index.open('w') as f:
-        f.write(index_html)
+    shutil.rmtree(dir_convert)
 
-    return f"{dir_convert.absolute()}"
+    return soup.find('body').decode_contents()
 
 
-def get_html_task(task: TexTask) -> str:
-    return tex_to_html(task.assigment)
+def get_html_task(task: TexTask) -> KSITask:
+    return KSITask(
+        index=task.index,
+        title=parse_task_name(task.assigment),
+        points=parse_task_points(task.assigment),
+        assigment=tex_to_html(task.assigment),
+        solution=tex_to_html(task.solution) if task.solution.exists() else '<p>Tato úloha nemá řešení</p>'
+    )

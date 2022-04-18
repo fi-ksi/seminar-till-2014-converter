@@ -4,7 +4,7 @@ from shutil import copy, rmtree
 from typing import Union, Optional
 from subprocess import check_call, PIPE
 
-from ..conversion import MarkdownText, MarkdownTask, get_markdown_text, get_markdown_task
+from ..tex_parser import MarkdownText, MarkdownTask, get_markdown_text, get_markdown_task
 from ..tex import TexTask, TexWave, TexYear
 
 from unidecode import unidecode
