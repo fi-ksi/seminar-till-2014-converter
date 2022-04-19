@@ -81,9 +81,9 @@ def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave:
     with file_meta.open('r') as f:
         info = json.load(f)
     with file_assigment.open('r') as f:
-        assigment = f.read().replace('\n', '')
+        assigment = f.read().replace('\n', ' ')
     with file_solution.open('r') as f:
-        solution = f.read().replace('\n', '')
+        solution = f.read().replace('\n', ' ')
 
     task_name: str = info['title']
     task_points: float = info['points']
@@ -103,7 +103,7 @@ def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave:
     if task_points > 0:
         quiz_data = "{}"
         task_queries.append(
-            f'INSERT INTO modules VALUES({MODULE_ID}, {TASK_ID}, "general", "Řešení", "Nahraj své řešení", FALSE, {task_points}, 0, FALSE, FALSE, NULL, {mysql_escape(quiz_data)});',
+            f'INSERT INTO modules VALUES({MODULE_ID}, {TASK_ID}, "general", "Řešení", "Nahraj své řešení", {task_points}, FALSE, 0, FALSE, FALSE, NULL, {mysql_escape(quiz_data)});',
         )
         MODULE_ID += 1
 
