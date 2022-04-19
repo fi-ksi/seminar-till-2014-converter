@@ -147,10 +147,17 @@ def tex_to_html(file_tex: Path) -> str:
 
 
 def get_html_task(task: TexTask) -> KSITask:
+    task_prefix = """
+    <div class="alert alert-primary" role="alert">
+        Tato úloha byla automaticky zkonvertována z původní korespondenční verze,
+        některé části se proto mohou zobrazovat špatně.
+    </div>
+    """
+
     return KSITask(
         index=task.index,
         title=parse_task_name(task.assigment),
         points=parse_task_points(task.assigment),
-        assigment=tex_to_html(task.assigment),
+        assigment=task_prefix + tex_to_html(task.assigment),
         solution=tex_to_html(task.solution) if task.solution.exists() else '<p>Tato úloha nemá řešení</p>'
     )
