@@ -131,7 +131,7 @@ def tex_to_html(file_tex: Path) -> str:
                 '--verb=FileSave',
                 '--verb=FileQuit',
                 f"{child.absolute()}"
-            ], timeout=15)
+            ], timeout=15, stderr=PIPE, stdout=PIPE)
         except subprocess.TimeoutExpired:
             child.unlink()
     display.stop()
