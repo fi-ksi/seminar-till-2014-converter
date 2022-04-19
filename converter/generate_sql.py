@@ -37,7 +37,7 @@ def generate_sql_year(dir_year, year: TexYear) -> str:
         f'INSERT INTO years VALUES({year.index}, {mysql_escape(year_name)}, FALSE, 0);'
     )
 
-    for wave in year.waves:
+    for wave in sorted(year.waves, key=lambda x: x.index):
         dir_wave = dir_year.joinpath(f"{wave.index}")
         if not dir_wave.exists():
             continue

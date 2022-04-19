@@ -104,15 +104,19 @@ def tex_to_html(file_tex: Path) -> str:
 
     # inline latex math instead of including it as an image
     for math in soup.find_all(class_='MATH'):
-        math_text = ""
+        math_parts: List[str] = []
         to_delete: List[Path] = []
         for img in math.find_all('img'):
-            math_text += img['alt'] + " "
+            math_text: str = img['alt']
+            math_text = math_text.strip()
+            if math_text.startswith('$') and math_text.endswith('$'):
+                math_text = math_text[1:-1]
+            math_parts.append(math_text)
             to_delete.append(dir_convert.joinpath(img['src']))
         for file in to_delete:
             file.unlink(missing_ok=True)
         math['class'] = 'math'
-        math.string = math_text
+        math.string = ' '.join(math_parts)
 
     # crop remaining svgs
     display = Display()
@@ -157,11 +161,12 @@ def get_html_task(task: TexTask) -> KSITask:
         některé části se proto mohou zobrazovat špatně.
     </div>
     """
+    is_preamble = task.index == 0
 
     return KSITask(
         index=task.index,
-        title=parse_task_name(task.assigment),
-        points=parse_task_points(task.assigment),
+        title=parse_task_name(task.assigment) if not is_preamble else 'Úvodník',
+        points=parse_task_points(task.assigment) if not is_preamble else 0.0,
         assigment=task_prefix + tex_to_html(task.assigment),
         solution=tex_to_html(task.solution) if task.solution is not None and task.solution.exists() else '<p>Tato úloha nemá řešení</p>'
     )
