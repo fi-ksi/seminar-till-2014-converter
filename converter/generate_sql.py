@@ -84,7 +84,7 @@ def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave:
         solution = f.read().replace('\n', '')
 
     task_name = info['title']
-    task_prerequisite = "NULL" if first_task_in_wave else TASK_ID - 1
+    task_prerequisite = "NULL" if first_task_in_wave else mysql_escape(str(TASK_ID - 1))
 
     task_queries: List[str] = [
         f'INSERT INTO threads VALUES({THREAD_ID}, {mysql_escape(task_name)}, TRUE, {year.index});',

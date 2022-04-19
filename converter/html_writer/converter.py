@@ -70,11 +70,13 @@ def tex_to_html(file_tex: Path) -> str:
         f.write('\\usepackage{enumitem}  \n')
         f.write(tex_content)
 
+    # copy all assets locally
     for asset in get_tex_assets(file_tex):
         if asset is None:
             continue
         shutil.copy(asset, dir_convert.joinpath(asset.name))
 
+    # convert latex to html
     stdout = check_output([
         'latex2html',
         '-dir', f"{dir_convert.absolute()}",
@@ -87,6 +89,31 @@ def tex_to_html(file_tex: Path) -> str:
     ], text=True, stderr=PIPE, timeout=15)
     LOG.add_run(stdout)
 
+    # parse crated HTML
+    file_index = dir_convert.joinpath('index.html')
+    with file_index.open('r', errors='replace') as f:
+        index_html = f.read()
+
+    # replace wrong tags and image sizes
+    index_html = index_html\
+        .replace('height: 195.54ex', 'height: 1em') \
+        .replace(r'___begin__code', r'<pre><code>') \
+        .replace(r'___emd__code', r'</code></pre>')
+
+    soup = BeautifulSoup(index_html, 'html.parser')
+
+    # inline latex math instead of including it as an image
+    for math in soup.find_all(class_='MATH'):
+        math_text = ""
+        to_delete: List[Path] = []
+        for img in math.find_all('img'):
+            math_text += img['alt'] + " "
+            to_delete.append(dir_convert.joinpath(img['src']))
+        for file in to_delete:
+            file.unlink(missing_ok=True)
+        math.string = math_text
+
+    # crop remaining svgs
     display = Display()
     display.start()
     for child in dir_convert.iterdir():
@@ -104,15 +131,7 @@ def tex_to_html(file_tex: Path) -> str:
             child.unlink()
     display.stop()
 
-    file_index = dir_convert.joinpath('index.html')
-    with file_index.open('r', errors='replace') as f:
-        index_html = f.read()
-    index_html = index_html\
-        .replace('height: 195.54ex', 'height: 1em') \
-        .replace(r'___begin__code', r'<pre><code>') \
-        .replace(r'___emd__code', r'</code></pre>')
-
-    soup = BeautifulSoup(index_html, 'html.parser')
+    # inline all remaining images
     for img in soup.find_all('img'):
         file_img = dir_convert.joinpath(img['src'])
         if not file_img.exists():
@@ -121,6 +140,7 @@ def tex_to_html(file_tex: Path) -> str:
             img_b64 = b64encode(f.read()).decode('ascii')
         img['src'] = f"data:{guess_type(file_img)[0]};base64,{img_b64}"
 
+    # delete temporary directory
     shutil.rmtree(dir_convert)
 
     return soup.find('body').decode_contents()

@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 from converter.html_writer import get_html_task, LOG
-from converter.sql import generate_sql_insert
 from converter.tex import get_tex_years
 
 
@@ -41,7 +40,7 @@ def main() -> None:
                 except KeyboardInterrupt:
                     print(LOG.text)
                     return
-                # return
+                return
 
     print(LOG.unknown_commands)
 
