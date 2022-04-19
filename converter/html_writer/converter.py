@@ -159,5 +159,5 @@ def get_html_task(task: TexTask) -> KSITask:
         title=parse_task_name(task.assigment),
         points=parse_task_points(task.assigment),
         assigment=task_prefix + tex_to_html(task.assigment),
-        solution=tex_to_html(task.solution) if task.solution.exists() else '<p>Tato úloha nemá řešení</p>'
+        solution=tex_to_html(task.solution) if task.solution is not None and task.solution.exists() else '<p>Tato úloha nemá řešení</p>'
     )

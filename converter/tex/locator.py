@@ -11,9 +11,16 @@ def get_tex_tasks(dir_wave: Path) -> Iterator[TexTask]:
     if not dir_source.is_dir():
         return
 
-    for file_assigment in filter(lambda x: x.name.endswith('.tex') and x.name.startswith('zadani_'), dir_source.iterdir()):
-        file_solution = file_assigment.parent.joinpath(file_assigment.name.replace('zadani_', 'reseni_', 1)).resolve()
-        index = int(next(re.finditer(r"(\d+).tex$", file_assigment.name)).group(1))
+    for file_assigment in filter(
+        lambda x: x.name.endswith('.tex') and (x.name.startswith('zadani_') or x.name.startswith('uvodnik_')),
+        dir_source.iterdir()
+    ):
+        if file_assigment.name.startswith('uvodnik_'):
+            file_solution = None
+            index = 0
+        else:
+            file_solution = file_assigment.parent.joinpath(file_assigment.name.replace('zadani_', 'reseni_', 1)).resolve()
+            index = int(next(re.finditer(r"(\d+).tex$", file_assigment.name)).group(1))
         yield TexTask(
             index=index,
             assigment=file_assigment,

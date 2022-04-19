@@ -1,11 +1,11 @@
-from typing import NamedTuple, List
+from typing import NamedTuple, List, Optional
 from pathlib import Path
 
 
 class TexTask(NamedTuple):
     index: int
     assigment: Path
-    solution: Path
+    solution: Optional[Path]
 
 
 class TexWave(NamedTuple):

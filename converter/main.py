@@ -33,9 +33,9 @@ def main() -> None:
                     return
                 except Exception:
                     print('ERROR')
-                    file_traceback = dir_root.joinpath(f"error_convert_{year.index}_{wave.index}_{task.index}")
+                    file_traceback = dir_root.joinpath(f"error_convert_{year.index}_{wave.index}_{task.index}.log")
                     with file_traceback.open('w') as f:
-                        f.write('\n'.join(format_exc()))
+                        f.write(''.join(format_exc()))
                     continue
 
                 ksi_task_dir.mkdir(parents=True, exist_ok=True)
