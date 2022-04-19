@@ -55,7 +55,7 @@ def tex_to_html(file_tex: Path) -> str:
     dir_convert = Path(mkdtemp(prefix='ksi_task_', dir='/media/ramdisk'))
     file_tex_tmp = dir_convert.joinpath('input.tex')
 
-    with file_tex.open('r') as f:
+    with file_tex.open('r', errors='replace') as f:
         tex_content = f.read()
     tex_content = tex_content\
         .replace(r'\hlavicka', r'%\hlavicka')\
