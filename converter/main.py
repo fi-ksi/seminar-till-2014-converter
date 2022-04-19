@@ -33,7 +33,7 @@ def main() -> None:
                     return
                 except Exception:
                     print('ERROR')
-                    file_traceback = dir_root.joinpath(f"error_convert_{year.index}_{wave.index}_{task.index}.log")
+                    file_traceback = dir_root.joinpath(f"error_convert_{year.first_year}_{wave.index}_{task.index}.log")
                     with file_traceback.open('w') as f:
                         f.write(''.join(format_exc()))
                     continue

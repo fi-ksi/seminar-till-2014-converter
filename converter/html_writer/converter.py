@@ -111,6 +111,7 @@ def tex_to_html(file_tex: Path) -> str:
             to_delete.append(dir_convert.joinpath(img['src']))
         for file in to_delete:
             file.unlink(missing_ok=True)
+        math['class'] = 'math'
         math.string = math_text
 
     # crop remaining svgs
@@ -139,6 +140,9 @@ def tex_to_html(file_tex: Path) -> str:
         with file_img.open('rb') as f:
             img_b64 = b64encode(f.read()).decode('ascii')
         img['src'] = f"data:{guess_type(file_img)[0]};base64,{img_b64}"
+
+    # remove the last horizontal line
+    soup.find_all('hr')[-1].decompose()
 
     # delete temporary directory
     shutil.rmtree(dir_convert)

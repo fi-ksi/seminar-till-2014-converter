@@ -7,6 +7,7 @@ from converter.tex import TexYear, TexWave, get_tex_years
 TASK_ID = 148
 WAVE_ID = 13
 THREAD_ID = 492
+PREREQUISITE_ID = 140
 WAVE_GARANT = 3
 ICON_BASE = "/taskContent/10/icon/"
 
@@ -69,7 +70,7 @@ def generate_sql_wave(dir_wave, wave: TexWave, year: TexYear) -> str:
 
 
 def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave: bool) -> str:
-    global TASK_ID, THREAD_ID
+    global TASK_ID, THREAD_ID, PREREQUISITE_ID
 
     time_published = f"{year.first_year}-01-01 00:00:00"
 
@@ -84,12 +85,19 @@ def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave:
         solution = f.read().replace('\n', '')
 
     task_name = info['title']
-    task_prerequisite = "NULL" if first_task_in_wave else mysql_escape(str(TASK_ID - 1))
+    task_prerequisite = "NULL" if first_task_in_wave else PREREQUISITE_ID
 
     task_queries: List[str] = [
         f'INSERT INTO threads VALUES({THREAD_ID}, {mysql_escape(task_name)}, TRUE, {year.index});',
         f'INSERT INTO tasks VALUES({TASK_ID}, {mysql_escape(task_name)}, {WAVE_GARANT}, NULL, {wave_id}, {task_prerequisite}, "Korespondenční úloha", {mysql_escape(assigment)}, {mysql_escape(solution)}, {THREAD_ID}, {mysql_escape(ICON_BASE)}, {mysql_escape(time_published)}, {mysql_escape(time_published)}, TRUE, {mysql_escape("none")}, {mysql_escape("none")}, {mysql_escape("none")}, {mysql_escape(time_published)}, {mysql_escape("done")}, NULL);'
     ]
+
+    if not first_task_in_wave:
+        task_queries.extend([
+            f'INSERT INTO prerequisities VALUES({PREREQUISITE_ID}, "ATOMIC", NULL, {TASK_ID - 1});',
+        ])
+        PREREQUISITE_ID += 1
+
     THREAD_ID += 1
     TASK_ID += 1
 
