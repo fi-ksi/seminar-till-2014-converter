@@ -12,7 +12,7 @@ from subprocess import check_output, PIPE, call
 from pyvirtualdisplay import Display
 from bs4 import BeautifulSoup
 
-from converter.tex_parser.parser import get_tex_assets, parse_task_name, parse_task_points
+from converter.tex import get_tex_assets, parse_task_name, parse_task_points
 
 
 class HtmlConversionLog:
