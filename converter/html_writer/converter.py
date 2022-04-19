@@ -18,6 +18,7 @@ from converter.tex import get_tex_assets, parse_task_name, parse_task_points
 class HtmlConversionLog:
     def __init__(self):
         self.__runs: List[List[str]] = []
+        self.ignored_packages = {'DefineVerbatimEnvironment', 'thickhrule'}
 
     def add_run(self, stdout: str) -> None:
         self.__runs.append(stdout.split('\n'))
@@ -45,7 +46,7 @@ class HtmlConversionLog:
             if not line.startswith(line_start):
                 continue
             r.update(line[len(line_start):].split(' '))
-        return r
+        return r - self.ignored_packages
 
 
 LOG = HtmlConversionLog()
@@ -54,20 +55,23 @@ LOG = HtmlConversionLog()
 def tex_to_html(file_tex: Path) -> str:
     dir_convert = Path(mkdtemp(prefix='ksi_task_', dir='/media/ramdisk'))
     file_tex_tmp = dir_convert.joinpath('input.tex')
+    file_tex_prefix = Path(__file__).parent.joinpath('prefix.tex')
+
+    with file_tex_prefix.open('r') as f:
+        tex_prefix = f.read()
 
     with file_tex.open('r', errors='replace') as f:
         tex_content = f.read()
     tex_content = tex_content\
-        .replace(r'\hlavicka', r'%\hlavicka')\
-        .replace(r'\mensinadpis', r'\textbf')\
-        .replace(r'\bullet ', r'\\ -')\
+        .replace(r'\hlavicka', r'%\hlavicka') \
+        .replace(r'\ksivelkahlavicka', r'%\ksivelkahlavicka') \
+        .replace(r'\nadpis', r'\section') \
+        .replace(r'\mensinadpis', r'\subsection') \
+        .replace(r'\mensinadpis', r'\subsection') \
         .replace(r'\begin{code}', r'___begin__code') \
         .replace(r'\end{code}', r'___end__code')
     with file_tex_tmp.open('w') as f:
-        f.write('\\usepackage{graphicx}\n')
-        f.write('\\usepackage{pdfpages}\n')
-        f.write('\\usepackage[utf8]{inputenc}\n')
-        f.write('\\usepackage{enumitem}  \n')
+        f.write(tex_prefix)
         f.write(tex_content)
 
     # copy all assets locally

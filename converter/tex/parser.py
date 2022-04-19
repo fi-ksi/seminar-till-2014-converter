@@ -23,7 +23,7 @@ def find_asset(directory: Path, asset_name: str) -> Optional[Path]:
 
 
 def get_tex_assets(file_tex: Path) -> Iterable[Path]:
-    with file_tex.open('r') as f:
+    with file_tex.open('r', errors='replace') as f:
         content = f.read()
 
     return map(
@@ -33,7 +33,7 @@ def get_tex_assets(file_tex: Path) -> Iterable[Path]:
 
 
 def parse_task_head(tex_source: Path) -> Match:
-    with tex_source.open('r') as f:
+    with tex_source.open('r', errors='replace') as f:
         c = f.read()
     try:
         return next(RE_TASK_HEAD.finditer(c))

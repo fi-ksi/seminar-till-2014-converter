@@ -8,6 +8,7 @@ TASK_ID = 148
 WAVE_ID = 13
 THREAD_ID = 492
 PREREQUISITE_ID = 140
+MODULE_ID = 77
 WAVE_GARANT = 3
 ICON_BASE = "/taskContent/10/icon/"
 
@@ -20,7 +21,7 @@ def mysql_escape(value: str) -> str:
 def generate_sql_insert(dir_seminar: Path, years: Iterator[TexYear]) -> str:
     year_queries: List[str] = ["BEGIN TRANSACTION;"]
 
-    for year in years:
+    for year in sorted(years, key=lambda x: x.index):
         dir_year = dir_seminar.joinpath(f"{year.first_year}")
         if not dir_year.exists():
             continue
@@ -70,7 +71,7 @@ def generate_sql_wave(dir_wave, wave: TexWave, year: TexYear) -> str:
 
 
 def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave: bool) -> str:
-    global TASK_ID, THREAD_ID, PREREQUISITE_ID
+    global TASK_ID, THREAD_ID, PREREQUISITE_ID, MODULE_ID
 
     time_published = f"{year.first_year}-01-01 00:00:00"
 
@@ -84,7 +85,8 @@ def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave:
     with file_solution.open('r') as f:
         solution = f.read().replace('\n', '')
 
-    task_name = info['title']
+    task_name: str = info['title']
+    task_points: float = info['points']
     task_prerequisite = "NULL" if first_task_in_wave else PREREQUISITE_ID
 
     task_queries: List[str] = [
@@ -93,10 +95,17 @@ def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave:
     ]
 
     if not first_task_in_wave:
-        task_queries.extend([
+        task_queries.append(
             f'INSERT INTO prerequisities VALUES({PREREQUISITE_ID}, "ATOMIC", NULL, {TASK_ID - 1});',
-        ])
+        )
         PREREQUISITE_ID += 1
+
+    if task_points > 0:
+        quiz_data = "{}"
+        task_queries.append(
+            f'INSERT INTO modules VALUES({MODULE_ID}, {TASK_ID}, "general", "Řešení", "Nahraj své řešení", FALSE, {task_points}, 0, FALSE, FALSE, NULL, {mysql_escape(quiz_data)});',
+        )
+        MODULE_ID += 1
 
     THREAD_ID += 1
     TASK_ID += 1
