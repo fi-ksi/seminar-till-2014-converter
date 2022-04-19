@@ -2,13 +2,15 @@ import json
 from pathlib import Path
 
 from converter.html_writer import get_html_task, LOG
+from converter.sql import generate_sql_insert
 from converter.tex import get_tex_years
 
 
 def main() -> None:
     dir_root = Path(__file__).parent.parent.resolve()
-    years = get_tex_years(dir_root.joinpath('src').resolve())
+    years = list(get_tex_years(dir_root.joinpath('src').resolve()))
     dir_output = dir_root.joinpath('output').resolve()
+
     for year in years:
         for wave in year.waves:
             for task in wave.tasks:

@@ -64,11 +64,15 @@ def tex_to_html(file_tex: Path) -> str:
         .replace(r'\begin{code}', r'___begin__code') \
         .replace(r'\end{code}', r'___end__code')
     with file_tex_tmp.open('w') as f:
-        f.write(r'\usepackage{graphicx}')
-        f.write('\n')
+        f.write('\\usepackage{graphicx}\n')
+        f.write('\\usepackage{pdfpages}\n')
+        f.write('\\usepackage[utf8]{inputenc}\n')
+        f.write('\\usepackage{enumitem}  \n')
         f.write(tex_content)
 
     for asset in get_tex_assets(file_tex):
+        if asset is None:
+            continue
         shutil.copy(asset, dir_convert.joinpath(asset.name))
 
     stdout = check_output([
@@ -101,7 +105,7 @@ def tex_to_html(file_tex: Path) -> str:
     display.stop()
 
     file_index = dir_convert.joinpath('index.html')
-    with file_index.open('r') as f:
+    with file_index.open('r', errors='replace') as f:
         index_html = f.read()
     index_html = index_html\
         .replace('height: 195.54ex', 'height: 1em') \
