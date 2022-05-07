@@ -16,7 +16,9 @@ def find_asset(directory: Path, asset_name: str) -> Optional[Path]:
     for child in directory.iterdir():
         if child.name == asset_name:
             return child
-        if child.name.startswith(f"{asset_name}.") and guess_type(child)[0].startswith('image/'):
+        if child.name.startswith(f"{asset_name}.") and (
+                guess_type(child)[0].startswith('image/') or child.name.lower().endswith('.pdf')
+        ):
             return child
 
     return find_asset(directory.parent.resolve(), asset_name)

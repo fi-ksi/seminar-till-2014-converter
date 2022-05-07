@@ -1,4 +1,5 @@
 import shutil
+import re
 import subprocess
 from typing import List, Set
 from base64 import b64encode
@@ -75,10 +76,35 @@ def tex_to_html(file_tex: Path) -> str:
         f.write(tex_content)
 
     # copy all assets locally
+    pdf_assets: List[Path] = []
     for asset in get_tex_assets(file_tex):
         if asset is None:
             continue
         shutil.copy(asset, dir_convert.joinpath(asset.name))
+        if asset.name.lower().endswith('.pdf'):
+            pdf_assets.append(asset)
+
+    if pdf_assets:
+        for asset in pdf_assets:
+            asset_src = dir_convert.joinpath(asset.name).resolve()
+            asset_svg = asset_src.parent.joinpath(asset.name[:-4] + '.svg').resolve()
+            # convert pdf to svg
+            call([
+                'inkscape',
+                '-z',
+                '-f',
+                f"{asset_src}",
+                '-l',
+                f"{asset_svg}"
+            ], stdout=PIPE, stderr=PIPE)
+            asset_src.unlink()
+
+            # replace pdf path with svg path
+            tex_content = re.sub("{" + asset.name[:-4] + "(.pdf)?}", "{" + asset_svg.name + "}", tex_content)
+
+        with file_tex_tmp.open('w') as f:
+            f.write(tex_prefix)
+            f.write(tex_content)
 
     # convert latex to html
     stdout = check_output([
