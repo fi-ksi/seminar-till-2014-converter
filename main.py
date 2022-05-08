@@ -2,12 +2,12 @@ import json
 from pathlib import Path
 from traceback import format_exc
 
-from converter.html_writer import get_html_task, LOG
-from converter.tex import get_tex_years
+from html_writer import get_html_task, LOG
+from tex import get_tex_years
 
 
 def main() -> None:
-    dir_root = Path(__file__).parent.parent.resolve()
+    dir_root = Path(__file__).parent.resolve()
     years = list(get_tex_years(dir_root.joinpath('seminar-till-2014').resolve()))
     dir_output = dir_root.joinpath('output').resolve()
 

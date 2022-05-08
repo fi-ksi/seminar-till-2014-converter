@@ -18,28 +18,28 @@ which will clone all tasks inside the `seminar-till-2014` directory.
 
 ### Python
 
-All Python requirements are listed inside `converter/requirements.txt` file and
+All Python requirements are listed inside `requirements.txt` file and
 can be installed by running
 
 ```bash
-pip install -r converter/requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-To generate HTML task files from `src` directory to `output` directory,
+To generate HTML task files from `seminar-till-2014` directory to `output` directory,
 execute
 
 ```bash
-python converter/main.py
+python main.py
 ```
 
 To process the generated `output` directory into a single SQL statement,
-first adjust global constants inside `converter/generate_sql.py` and
+first adjust global constants inside `generate_sql.py` and
 then execute
 
 ```bash
-python converter/generate_sql.py
+python generate_sql.py
 ```
 
 This will print the SQL import statement to the standard output.

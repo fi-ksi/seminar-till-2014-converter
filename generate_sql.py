@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Iterator, List
 
-from converter.tex import TexYear, TexWave, get_tex_years
+from tex import TexYear, TexWave, get_tex_years
 
 TASK_ID = 148
 WAVE_ID = 13
@@ -115,7 +115,7 @@ def generate_sql_task(dir_task, wave_id: int, year: TexYear, first_task_in_wave:
 
 if __name__ == '__main__':
     def main() -> int:
-        dir_root = Path(__file__).parent.parent.resolve()
+        dir_root = Path(__file__).parent.resolve()
         years = get_tex_years(dir_root.joinpath('src').resolve())
         dir_output = dir_root.joinpath('output').resolve()
 

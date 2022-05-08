@@ -5,15 +5,15 @@ from typing import List, Set
 from base64 import b64encode
 from mimetypes import guess_type
 
-from converter.html_writer.types import KSITask
-from converter.tex import TexTask
+from html_writer.types import KSITask
+from tex import TexTask
 from tempfile import mkdtemp
 from pathlib import Path
 from subprocess import check_output, PIPE, call
 from pyvirtualdisplay import Display
 from bs4 import BeautifulSoup
 
-from converter.tex import get_tex_assets, parse_task_name, parse_task_points
+from tex import get_tex_assets, parse_task_name, parse_task_points
 
 
 class HtmlConversionLog:
