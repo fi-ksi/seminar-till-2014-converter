@@ -8,7 +8,7 @@ from converter.tex import get_tex_years
 
 def main() -> None:
     dir_root = Path(__file__).parent.parent.resolve()
-    years = list(get_tex_years(dir_root.joinpath('src').resolve()))
+    years = list(get_tex_years(dir_root.joinpath('seminar-till-2014').resolve()))
     dir_output = dir_root.joinpath('output').resolve()
 
     for year in years:

@@ -5,7 +5,20 @@ that can be inserted into a backend database.
 
 ## Requirements
 
-All requirements are listed inside `converter/requirements.txt` file and
+### Tasks
+
+Because the content of the tasks is inside hidden repository,
+it is necessary to first initialize submodules
+
+```bash
+git submodule init
+```
+
+which will clone all tasks inside the `seminar-till-2014` directory.
+
+### Python
+
+All Python requirements are listed inside `converter/requirements.txt` file and
 can be installed by running
 
 ```bash
