@@ -25,6 +25,13 @@ can be installed by running
 pip install -r requirements.txt
 ```
 
+### Commands
+
+The converter requires following commands to be available:
+
+- `latex2html` to convert LaTeX to HTML
+- `inkscape` to resize SVG images
+
 ## Usage
 
 To generate HTML task files from `seminar-till-2014` directory to `output` directory,
