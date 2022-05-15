@@ -50,3 +50,12 @@ python generate_sql.py
 ```
 
 This will print the SQL import statement to the standard output.
+
+## Code structure
+
+The code is split into two folders:
+
+- `tex` contains functions that take care of locating all TeX tasks together with their solutions (`locator.py`) and for parsing task metadata (`parser.py`) - name, points and assets
+- `html_writer` converts TeX tasks into HTML strings that can be inserted into KSI database (`converter.py`)
+
+Both sub-directories have a `types.py` file which contains custom-defined types.
